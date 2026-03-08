@@ -12,9 +12,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.meditaskpro.ranula"
     },
     "android": {
+      "package": "com.meditaskpro.ranula",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -25,6 +27,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": ["expo-font"],
+    "extra": {
+      "eas": {
+        "projectId": "1151f7e0-d4d6-4ddb-821c-a74c1b21316b"
+      }
     }
   }
 }
