@@ -11,6 +11,7 @@ import {
 } from "../store/todoSlice";
 import { todoService, Todo } from "../api/todoService";
 import Toast from "react-native-toast-message";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 export const useTasks = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -30,6 +31,7 @@ export const useTasks = () => {
       dispatch(setError(null));
     } catch (err) {
       dispatch(setError("Failed to load tasks"));
+      crashlytics().recordError(err as Error);
     } finally {
       dispatch(setLoading(false));
     }
@@ -41,6 +43,7 @@ export const useTasks = () => {
       Toast.show({ type: "success", text1: "Task created!" });
     } catch (err) {
       Toast.show({ type: "error", text1: "Failed to create task" });
+      crashlytics().recordError(err as Error);
     }
   };
 
@@ -50,11 +53,11 @@ export const useTasks = () => {
       await todoService.update(task.id, { status: newStatus });
       Toast.show({
         type: "success",
-        text1:
-          newStatus === "Completed" ? "Task Completed! 🎉" : "Task Reopened",
+        text1: newStatus === "Completed" ? "Task Completed!" : "Task Reopened",
       });
     } catch (err) {
       Toast.show({ type: "error", text1: "Failed to update task" });
+      crashlytics().recordError(err as Error);
     }
   };
 
@@ -64,6 +67,7 @@ export const useTasks = () => {
       Toast.show({ type: "success", text1: "Task deleted" });
     } catch (err) {
       Toast.show({ type: "error", text1: "Failed to delete task" });
+      crashlytics().recordError(err as Error);
     }
   };
 

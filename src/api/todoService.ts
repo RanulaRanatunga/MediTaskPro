@@ -13,6 +13,7 @@ import { getDb } from "../utils/firebaseConfig";
 import NetInfo from "@react-native-community/netinfo";
 import { store } from "../store";
 import { setTasks, addTask, updateTask, deleteTask } from "../store/todoSlice";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 export interface Todo {
   id: string;
@@ -45,6 +46,7 @@ export const todoService = {
       }
     } catch (error) {
       console.error("Error fetching todos:", error);
+      crashlytics().recordError(error as Error);
       throw error;
     }
   },
@@ -63,6 +65,7 @@ export const todoService = {
       }
     } catch (error) {
       console.error("Error fetching todo:", error);
+      crashlytics().recordError(error as Error);
       throw error;
     }
   },
@@ -84,6 +87,7 @@ export const todoService = {
       }
     } catch (error) {
       console.error("Error creating todo:", error);
+      crashlytics().recordError(error as Error);
       throw error;
     }
   },
@@ -102,6 +106,7 @@ export const todoService = {
       }
     } catch (error) {
       console.error("Error updating todo:", error);
+      crashlytics().recordError(error as Error);
       throw error;
     }
   },
@@ -114,6 +119,7 @@ export const todoService = {
       }
     } catch (error) {
       console.error("Error deleting todo:", error);
+      crashlytics().recordError(error as Error);
       throw error;
     }
   },
@@ -129,6 +135,7 @@ export const todoService = {
       },
       (error) => {
         console.error("Snapshot error:", error);
+        crashlytics().recordError(error as Error);
       },
     );
   },

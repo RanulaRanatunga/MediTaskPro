@@ -7,6 +7,11 @@ import { StatusBar } from "expo-status-bar";
 import AppNavigator from "./src/navigation/AppNavigator";
 import { useColorScheme } from "react-native";
 import React from "react";
+import crashlytics from "@react-native-firebase/crashlytics";
+
+if (!__DEV__) {
+  crashlytics().setCrashlyticsCollectionEnabled(true);
+}
 
 export default function App() {
   const scheme = useColorScheme();

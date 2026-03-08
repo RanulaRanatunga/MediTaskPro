@@ -26,12 +26,17 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "jsEngine": "jsc"
+      "jsEngine": "jsc",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-font"],
+    "plugins": [
+      "expo-font",
+      "@react-native-firebase/app",
+      "@react-native-firebase/crashlytics"
+    ],
     "extra": {
       "eas": {
         "projectId": "1151f7e0-d4d6-4ddb-821c-a74c1b21316b"
