@@ -7,10 +7,12 @@ import {
   deleteDoc,
   doc,
   onSnapshot,
+  setDoc,
 } from "firebase/firestore";
-import { db } from "../../App";
-
-const todosRef = collection(db, "todos");
+import { getDb } from "../utils/firebaseConfig";
+import NetInfo from "@react-native-community/netinfo";
+import { store } from "../store";
+import { setTasks, addTask, updateTask, deleteTask } from "../store/todoSlice";
 
 export interface Todo {
   id: string;
@@ -21,13 +23,26 @@ export interface Todo {
   createdAt: string;
 }
 
+const getTodosRef = () => collection(getDb(), "todos");
+
+async function isOnline() {
+  const state = await NetInfo.fetch();
+  return state.isConnected;
+}
+
 export const todoService = {
   getAll: async (): Promise<Todo[]> => {
     try {
-      const snapshot = await getDocs(todosRef);
-      return snapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() }) as Todo,
-      );
+      if (await isOnline()) {
+        const snapshot = await getDocs(getTodosRef());
+        const tasks = snapshot.docs.map(
+          (doc) => ({ id: doc.id, ...doc.data() }) as Todo,
+        );
+        store.dispatch(setTasks(tasks));
+        return tasks;
+      } else {
+        return store.getState().todo.tasks || [];
+      }
     } catch (error) {
       console.error("Error fetching todos:", error);
       throw error;
@@ -35,10 +50,17 @@ export const todoService = {
   },
   getById: async (id: string): Promise<Todo> => {
     try {
-      const docRef = doc(db, "todos", id);
-      const docSnap = await getDoc(docRef);
-      if (!docSnap.exists()) throw new Error("Todo not found");
-      return { id: docSnap.id, ...docSnap.data() } as Todo;
+      if (await isOnline()) {
+        const docRef = doc(getDb(), "todos", id);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) throw new Error("Todo not found");
+        return { id: docSnap.id, ...docSnap.data() } as Todo;
+      } else {
+        const localTasks = store.getState().todo.tasks || [];
+        const todo = localTasks.find((t: Todo) => t.id === id);
+        if (!todo) throw new Error("Todo not found offline");
+        return todo;
+      }
     } catch (error) {
       console.error("Error fetching todo:", error);
       throw error;
@@ -50,8 +72,16 @@ export const todoService = {
         ...todo,
         createdAt: new Date().toISOString(),
       };
-      const docRef = await addDoc(todosRef, newTodo);
-      return { id: docRef.id, ...newTodo };
+      const newRef = doc(getTodosRef());
+      const id = newRef.id;
+      const localTodo = { ...newTodo, id };
+      store.dispatch(addTask(localTodo));
+      if (await isOnline()) {
+        await setDoc(newRef, newTodo);
+        return localTodo;
+      } else {
+        return localTodo;
+      }
     } catch (error) {
       console.error("Error creating todo:", error);
       throw error;
@@ -59,9 +89,17 @@ export const todoService = {
   },
   update: async (id: string, updates: Partial<Todo>): Promise<Todo> => {
     try {
-      const docRef = doc(db, "todos", id);
-      await updateDoc(docRef, updates);
-      return { id, ...updates } as Todo; // Partial, but assuming caller provides needed fields
+      store.dispatch(updateTask({ id, changes: updates }));
+      if (await isOnline()) {
+        const docRef = doc(getDb(), "todos", id);
+        await updateDoc(docRef, updates);
+        const updatedSnap = await getDoc(docRef);
+        return { id, ...updatedSnap.data() } as Todo;
+      } else {
+        const localTasks = store.getState().todo.tasks || [];
+        const updatedTodo = localTasks.find((t: Todo) => t.id === id);
+        return updatedTodo as Todo;
+      }
     } catch (error) {
       console.error("Error updating todo:", error);
       throw error;
@@ -69,59 +107,29 @@ export const todoService = {
   },
   delete: async (id: string): Promise<void> => {
     try {
-      const docRef = doc(db, "todos", id);
-      await deleteDoc(docRef);
+      store.dispatch(deleteTask(id));
+      if (await isOnline()) {
+        const docRef = doc(getDb(), "todos", id);
+        await deleteDoc(docRef);
+      }
     } catch (error) {
       console.error("Error deleting todo:", error);
       throw error;
     }
   },
   subscribe: (callback: (todos: Todo[]) => void) => {
-    return onSnapshot(todosRef, (snapshot) => {
-      const todos = snapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() }) as Todo,
-      );
-      callback(todos);
-    });
+    return onSnapshot(
+      getTodosRef(),
+      (snapshot) => {
+        const todos = snapshot.docs.map(
+          (doc) => ({ id: doc.id, ...doc.data() }) as Todo,
+        );
+        store.dispatch(setTasks(todos));
+        callback(todos);
+      },
+      (error) => {
+        console.error("Snapshot error:", error);
+      },
+    );
   },
 };
-
-// import axiosInstance from "./axiosInstance";
-
-// export interface Todo {
-//   id: string;
-//   title: string;
-//   description: string;
-//   priority: "Low" | "Medium" | "High";
-//   status: "Pending" | "Completed";
-//   createdAt: string;
-// }
-
-// export const todoService = {
-//   getAll: async (): Promise<Todo[]> => {
-//     const response = await axiosInstance.get<Todo[]>("/todo");
-//     return response.data;
-//   },
-
-//   getById: async (id: string): Promise<Todo> => {
-//     const response = await axiosInstance.get<Todo>(`/todo/${id}`);
-//     return response.data;
-//   },
-
-//   create: async (todo: Omit<Todo, "id" | "createdAt">): Promise<Todo> => {
-//     const response = await axiosInstance.post<Todo>("/todo", {
-//       ...todo,
-//       createdAt: new Date().toISOString(),
-//     });
-//     return response.data;
-//   },
-
-//   update: async (id: string, todo: Partial<Todo>): Promise<Todo> => {
-//     const response = await axiosInstance.put<Todo>(`/todo/${id}`, todo);
-//     return response.data;
-//   },
-
-//   delete: async (id: string): Promise<void> => {
-//     await axiosInstance.delete(`/todo/${id}`);
-//   },
-// };

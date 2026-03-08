@@ -14,16 +14,19 @@ import { theme } from "../constants/theme";
 import { useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { Todo, todoService } from "../api/todoService";
+import { Todo } from "../api/todoService";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import NetInfo from "@react-native-community/netinfo";
 import { useState, useEffect } from "react";
+import { todoService } from "../api/todoService";
+import { useDispatch } from "react-redux";
 import { setTasks } from "../store/todoSlice";
 
 const { width } = Dimensions.get("window");
 
 const DashboardScreen = () => {
+  const dispatch = useDispatch();
   const navigation = useNavigation<any>();
   const colorScheme = useColorScheme() === "dark" ? "dark" : "light";
   const colors = theme[colorScheme];
@@ -36,22 +39,21 @@ const DashboardScreen = () => {
     removeTask,
     allTasks,
   } = useTasks();
-
   const [isOffline, setIsOffline] = useState(false);
 
-  // useEffect(() => {
-  //   const unsubscribe = NetInfo.addEventListener((state) => {
-  //     setIsOffline(!state.isConnected);
-  //   });
-  //   return unsubscribe;
-  // }, []);
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setIsOffline(!state.isConnected);
+    });
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
-  const unsubscribe = todoService.subscribe((todos) => {
-    dispatch(setTasks(todos));
-  });
-  return unsubscribe;
-}, []);
+    const unsubscribe = todoService.subscribe((todos) => {
+      dispatch(setTasks(todos));
+    });
+    return unsubscribe;
+  }, []);
 
   const completed = allTasks.filter((t) => t.status === "Completed").length;
   const progress =
@@ -110,7 +112,6 @@ const DashboardScreen = () => {
         <Text style={[styles.greeting, { color: colors.text }]}>
           Good Morning, Dr. Nimal
         </Text>
-
         {isOffline && (
           <View style={styles.offlineBanner}>
             <Ionicons name="cloud-offline" size={18} color="#fff" />
@@ -127,7 +128,6 @@ const DashboardScreen = () => {
           placeholder="Search tasks..."
           onChangeText={setSearchQuery}
         />
-
         <View style={styles.filterRow}>
           {(["All", "Pending", "Completed"] as const).map((s) => (
             <TouchableOpacity
@@ -155,7 +155,6 @@ const DashboardScreen = () => {
             <View style={[styles.progressFill, { width: `${progress}%` }]} />
           </View>
         </View>
-
         <FlatList
           data={tasks}
           keyExtractor={(item) => item.id}
@@ -167,7 +166,6 @@ const DashboardScreen = () => {
             <Text style={styles.emptyText}>No tasks found</Text>
           }
         />
-
         <TouchableOpacity
           style={[styles.fab, { backgroundColor: colors.primary }]}
           onPress={() => navigation.navigate("AddTask")}
@@ -250,7 +248,3 @@ const styles = StyleSheet.create({
 });
 
 export default DashboardScreen;
-function dispatch(arg0: any) {
-  throw new Error("Function not implemented.");
-}
-

@@ -6,7 +6,6 @@ import { Todo } from "../api/todoService";
 import { theme } from "../constants/theme";
 import { useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { todoService } from "../api/todoService";
 
 type RootStackParamList = {
   TaskDetail: { task: Todo };
@@ -16,7 +15,6 @@ const TaskDetailScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteProp<RootStackParamList, "TaskDetail">>();
   const task = route.params.task;
-
   const { toggleComplete, removeTask } = useTasks();
   const colorScheme = useColorScheme() === "dark" ? "dark" : "light";
   const colors = theme[colorScheme];
@@ -41,7 +39,6 @@ const TaskDetailScreen = () => {
       <Text style={[styles.description, { color: colors.textSecondary }]}>
         {task.description}
       </Text>
-
       <View style={styles.infoRow}>
         <Text style={[styles.label, { color: colors.text }]}>Priority:</Text>
         <Text
@@ -50,7 +47,6 @@ const TaskDetailScreen = () => {
           {task.priority}
         </Text>
       </View>
-
       <TouchableOpacity
         style={[
           styles.toggleButton,
@@ -67,7 +63,6 @@ const TaskDetailScreen = () => {
             : "Mark as Completed"}
         </Text>
       </TouchableOpacity>
-
       <TouchableOpacity
         style={styles.editButton}
         onPress={() => navigation.navigate("AddTask", { task })}
@@ -75,7 +70,6 @@ const TaskDetailScreen = () => {
         <Ionicons name="pencil" size={20} color="#fff" />
         <Text style={styles.buttonText}>Edit Task</Text>
       </TouchableOpacity>
-
       <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
         <Ionicons name="trash" size={20} color="#fff" />
         <Text style={styles.buttonText}>Delete Task</Text>

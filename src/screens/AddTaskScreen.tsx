@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -11,10 +11,16 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { Picker } from "@react-native-picker/picker";
 import { useTasks } from "../hooks/useTasks";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { theme } from "../constants/theme";
 import { useColorScheme } from "react-native";
 import { TextInput } from "react-native";
+import { Todo, todoService } from "../api/todoService";
+import Toast from "react-native-toast-message";
+
+type RootStackParamList = {
+  AddTask: { task?: Todo };
+};
 
 const schema = yup.object().shape({
   title: yup.string().required("Title is required"),
@@ -26,6 +32,9 @@ type FormData = yup.InferType<typeof schema>;
 
 const AddTaskScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute<RouteProp<RootStackParamList, "AddTask">>();
+  const task = route.params?.task;
+  const isEdit = !!task;
   const { createTask } = useTasks();
   const colorScheme = useColorScheme() === "dark" ? "dark" : "light";
   const colors = theme[colorScheme];
@@ -35,18 +44,37 @@ const AddTaskScreen = () => {
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm<FormData>({
     resolver: yupResolver(schema),
     defaultValues: { title: "", description: "", priority: "Medium" },
   });
 
-  const onSubmit = (data: FormData) => {
-    createTask({
-      ...data,
-      status: "Pending" as const,
-    });
-    reset();
-    navigation.goBack();
+  useEffect(() => {
+    if (isEdit && task) {
+      setValue("title", task.title);
+      setValue("description", task.description);
+      setValue("priority", task.priority);
+      navigation.setOptions({ title: "Edit Task" });
+    }
+  }, [isEdit, task, setValue, navigation]);
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      if (isEdit && task) {
+        await todoService.update(task.id, data);
+        Toast.show({ type: "success", text1: "Task updated!" });
+      } else {
+        createTask({
+          ...data,
+          status: "Pending",
+        });
+      }
+      reset();
+      navigation.goBack();
+    } catch (err) {
+      Toast.show({ type: "error", text1: "Failed to save task" });
+    }
   };
 
   return (
@@ -70,7 +98,6 @@ const AddTaskScreen = () => {
         )}
       />
       {errors.title && <Text style={styles.error}>{errors.title.message}</Text>}
-
       <Text style={[styles.label, { color: colors.text }]}>Description</Text>
       <Controller
         control={control}
@@ -91,7 +118,6 @@ const AddTaskScreen = () => {
       {errors.description && (
         <Text style={styles.error}>{errors.description.message}</Text>
       )}
-
       <Text style={[styles.label, { color: colors.text }]}>Priority</Text>
       <Controller
         control={control}
@@ -112,12 +138,13 @@ const AddTaskScreen = () => {
           </View>
         )}
       />
-
       <TouchableOpacity
         style={[styles.saveButton, { backgroundColor: colors.primary }]}
         onPress={handleSubmit(onSubmit)}
       >
-        <Text style={styles.saveText}>Save Task</Text>
+        <Text style={styles.saveText}>
+          {isEdit ? "Update Task" : "Save Task"}
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );

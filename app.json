@@ -11,9 +11,11 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "platforms": ["android", "ios", "web"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.meditaskpro.ranula"
+      "bundleIdentifier": "com.meditaskpro.ranula",
+      "jsEngine": "jsc"
     },
     "android": {
       "package": "com.meditaskpro.ranula",
@@ -23,7 +25,8 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "jsEngine": "jsc"
     },
     "web": {
       "favicon": "./assets/favicon.png"

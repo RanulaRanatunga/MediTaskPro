@@ -14,7 +14,6 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const isOnline = (await NetInfo.fetch()).isConnected;
-
     if (!isOnline) {
       Toast.show({
         type: "error",
@@ -24,7 +23,6 @@ axiosInstance.interceptors.response.use(
       });
       return Promise.reject(error);
     }
-
     if (error.response?.status >= 500) {
       Toast.show({
         type: "error",
@@ -34,7 +32,6 @@ axiosInstance.interceptors.response.use(
     } else if (error.code === "ECONNABORTED") {
       Toast.show({ type: "error", text1: "Request Timeout" });
     }
-
     return Promise.reject(error);
   },
 );

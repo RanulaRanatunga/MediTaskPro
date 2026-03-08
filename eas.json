@@ -6,7 +6,10 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
     },
     "preview": {
       "distribution": "internal"
@@ -19,28 +22,3 @@
     "production": {}
   }
 }
-
-// {
-//   "cli": {
-//     "version": ">= 18.1.0",
-//     "appVersionSource": "remote"
-//   },
-//   "build": {
-//     "development": {
-//       "developmentClient": true,
-//       "distribution": "internal",
-//       "googleServicesFile": "./google-services.json"
-//     },
-//     "preview": {
-//       "distribution": "internal",
-//       "googleServicesFile": "./google-services.json"
-//     },
-//     "production": {
-//       "autoIncrement": true,
-//       "googleServicesFile": "./google-services.json"
-//     }
-//   },
-//   "submit": {
-//     "production": {}
-//   }
-// }

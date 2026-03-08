@@ -37,8 +37,7 @@ export const useTasks = () => {
 
   const createTask = async (newTask: Omit<Todo, "id" | "createdAt">) => {
     try {
-      const task = await todoService.create(newTask);
-      dispatch(addTask(task));
+      await todoService.create(newTask);
       Toast.show({ type: "success", text1: "Task created!" });
     } catch (err) {
       Toast.show({ type: "error", text1: "Failed to create task" });
@@ -48,8 +47,7 @@ export const useTasks = () => {
   const toggleComplete = async (task: Todo) => {
     const newStatus = task.status === "Pending" ? "Completed" : "Pending";
     try {
-      const updated = await todoService.update(task.id, { status: newStatus });
-      dispatch(updateTask(updated));
+      await todoService.update(task.id, { status: newStatus });
       Toast.show({
         type: "success",
         text1:
@@ -63,7 +61,6 @@ export const useTasks = () => {
   const removeTask = async (id: string) => {
     try {
       await todoService.delete(id);
-      dispatch(deleteTask(id));
       Toast.show({ type: "success", text1: "Task deleted" });
     } catch (err) {
       Toast.show({ type: "error", text1: "Failed to delete task" });

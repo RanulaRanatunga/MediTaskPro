@@ -13,6 +13,8 @@ const initialState: TodoState = {
   error: null,
 };
 
+type UpdatePayload = { id: string; changes: Partial<Todo> };
+
 const todoSlice = createSlice({
   name: "todo",
   initialState,
@@ -23,9 +25,14 @@ const todoSlice = createSlice({
     addTask: (state, action: PayloadAction<Todo>) => {
       state.tasks.unshift(action.payload);
     },
-    updateTask: (state, action: PayloadAction<Todo>) => {
+    updateTask: (state, action: PayloadAction<UpdatePayload>) => {
       const index = state.tasks.findIndex((t) => t.id === action.payload.id);
-      if (index !== -1) state.tasks[index] = action.payload;
+      if (index !== -1) {
+        state.tasks[index] = {
+          ...state.tasks[index],
+          ...action.payload.changes,
+        };
+      }
     },
     deleteTask: (state, action: PayloadAction<string>) => {
       state.tasks = state.tasks.filter((t) => t.id !== action.payload);
@@ -47,4 +54,5 @@ export const {
   setLoading,
   setError,
 } = todoSlice.actions;
+
 export default todoSlice.reducer;
